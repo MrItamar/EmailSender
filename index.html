@@ -41,7 +41,7 @@
 <script>
   // Initialize EmailJS (Replace with your Public Key)
   (function() {
-    emailjs.init("YOUR_PUBLIC_KEY");
+    emailjs.init("o3N7IydTeoo9PROJ2");
   })();
 
   async function sendBulkEmails() {
@@ -73,7 +73,7 @@
         logDiv.innerHTML += `Sending to ${targetEmail}... `;
         
         // Send email via EmailJS API
-        await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams);
+        await emailjs.send('service_flp8wkr', 'template_ysh4xpc', templateParams);
         
         logDiv.innerHTML += `<span style="color: green;">SUCCESS</span><br>`;
       } catch (error) {
