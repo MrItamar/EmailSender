@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BetterWorld - Outreach Emailer</title>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }
     .card { max-width: 650px; margin: 30px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     h2 { margin-top: 0; color: #2c3e50; }
     label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #34495e; }
-    input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    input[type="text"], input[type="password"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
     textarea { height: 120px; resize: vertical; }
     .hint { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
     button { background: #27ae60; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin-top: 20px; width: 100%; font-weight: bold; }
@@ -23,12 +22,16 @@
 <div class="card">
   <h2>BetterWorld Outreach Sender</h2>
   
+  <label for="apiKey">Resend API Key</label>
+  <input type="password" id="apiKey" placeholder="re_xxxxxxxxx">
+  <div class="hint">Saved locally in your browser session so you don't expose it publicly on GitHub.</div>
+
   <label for="recipients">Recipients (Single or Comma-Separated)</label>
-  <input type="text" id="recipients" placeholder="email1@domain.com, email2@domain.com, email3@domain.com">
+  <input type="text" id="recipients" placeholder="email1@domain.com, email2@domain.com">
   <div class="hint">Separate multiple email addresses with commas.</div>
 
   <label for="subject">Email Subject</label>
-  <input type="text" id="subject" placeholder="Interactive billboard placement in BetterWorld 🌿">
+  <input type="text" id="subject" placeholder="In-game billboard preview for [Brand Name]">
 
   <label for="message">Email Body</label>
   <textarea id="message" placeholder="Hi team, I am Itamar..."></textarea>
@@ -37,18 +40,20 @@
 
   <div id="log">Logs will appear here...</div>
 </div>
+
 <script>
-  // ⚠️ Important: Replace 're_xxxxxxxxx' below with your actual Resend API Key
-  const RESEND_API_KEY = 're_C744ePhV_99kmWmZZnVERE9bAn3azjNhC';
+  // Auto-fill saved API Key if previously entered
+  document.getElementById('apiKey').value = localStorage.getItem('bw_resend_key') || '';
 
   async function sendBulkEmails() {
+    const apiKey = document.getElementById('apiKey').value.trim();
     const rawEmails = document.getElementById('recipients').value;
     const subject = document.getElementById('subject').value;
     const message = document.getElementById('message').value;
     const logDiv = document.getElementById('log');
 
-    if (RESEND_API_KEY === 're_xxxxxxxxx') {
-      alert("Please replace 're_xxxxxxxxx' with your actual Resend API Key in the script!");
+    if (!apiKey || !apiKey.startsWith('re_')) {
+      alert("Please enter a valid Resend API Key starting with 're_'!");
       return;
     }
 
@@ -56,6 +61,9 @@
       alert("Please fill in all fields!");
       return;
     }
+
+    // Save key locally for convenience
+    localStorage.setItem('bw_resend_key', apiKey);
 
     // Split comma-separated list into array of emails
     const emailList = rawEmails.split(',').map(e => e.trim()).filter(e => e.length > 0);
@@ -73,13 +81,13 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${RESEND_API_KEY}`
+            'Authorization': `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            from: 'BetterWorld <onboarding@resend.dev>', // Resend's default free sending domain
+            from: 'BetterWorld <onboarding@resend.dev>',
             to: [targetEmail],
             subject: subject,
-            html: `<p>${message.replace(/\n/g, '<br>')}</p>`, // Formats line breaks properly
+            html: `<p>${message.replace(/\n/g, '<br>')}</p>`,
             reply_to: 'mariligames01@gmail.com'
           })
         });
@@ -95,7 +103,7 @@
         logDiv.innerHTML += `<span style="color: red;">FAILED (${error.message})</span><br>`;
       }
 
-      // 3-second delay between batch emails to keep rate limits safe
+      // 3-second delay between batch emails
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
 
@@ -105,4 +113,3 @@
 
 </body>
 </html>
-
